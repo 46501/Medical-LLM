@@ -1,0 +1,21 @@
+# Environment Variables
+.env
+backend/.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.pytest_cache/
+
+# Docker
+.docker/

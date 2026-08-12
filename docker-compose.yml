@@ -26,6 +26,7 @@ services:
       - DATABASE_URL=postgresql+psycopg://medimind:password123@postgres:5432/medimind_db
       - JWT_SECRET=${JWT_SECRET:-supersecretkey}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy

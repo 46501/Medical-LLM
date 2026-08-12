@@ -46,25 +46,31 @@ jobs:
         DATABASE_URL: postgresql+psycopg://medimind:password123@localhost:5432/medimind_test_db
         JWT_SECRET: supersecretkey
       run: |
-        pytest --cov=app tests/
+        pytest -v
 
   frontend-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Start services with Docker Compose
+      env:
+        GEMINI_API_KEY: "mock_ci_key"
+        OPENAI_API_KEY: "mock_ci_key"
+        JWT_SECRET: "supersecretkey"
+      run: docker compose up -d --build
+    - name: Wait for services to be ready
+      run: sleep 15
+    - name: Initialize Database
+      run: docker compose exec -T backend python init_db.py
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         node-version: "18.x"
-    - name: Install dependencies
+    - name: Install Playwright and dependencies
       working-directory: ./frontend
-      run: npm ci
-    - name: Build
-      working-directory: ./frontend
-      run: npm run build
-    - name: Install Playwright Browsers
-      working-directory: ./frontend
-      run: npx playwright install --with-deps
+      run: |
+        npm ci
+        npx playwright install --with-deps
     - name: Run Playwright tests
       working-directory: ./frontend
       run: npx playwright test

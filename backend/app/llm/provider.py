@@ -14,24 +14,30 @@ class LLMProvider(ABC):
 class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str):
         self.api_key = api_key
-        # Initialize Gemini API here
-        # import google.generativeai as genai
-        # genai.configure(api_key=api_key)
-        # self.model = genai.GenerativeModel('gemini-pro')
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        # Use gemini-1.5-flash as the standard model instead of legacy gemini-pro
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(self, system_prompt: str, user_prompt: str) -> str:
-        # Mock implementation for now
-        return "This is a mock Gemini response."
+        prompt = f"System Instruction: {system_prompt}\n\nUser: {user_prompt}"
+        response = await self.model.generate_content_async(prompt)
+        return response.text
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_stream(self, system_prompt: str, user_prompt: str) -> AsyncGenerator[str, None]:
-        # Mock implementation
-        yield "This "
-        yield "is a "
-        yield "mock Gemini stream."
+        prompt = f"System Instruction: {system_prompt}\n\nUser: {user_prompt}"
+        response = await self.model.generate_content_async(prompt, stream=True)
+        async for chunk in response:
+            if chunk.text:
+                yield chunk.text
 
 def get_llm_provider() -> LLMProvider:
     from app.core.config import settings
-    # For now, just return a mock provider. In production, we instantiate with settings.GEMINI_API_KEY
+    # We use a mock provider during Pytest because of rate limiting / no key, but in prod we use real Gemini
+    if settings.GEMINI_API_KEY == "testkey" or not settings.GEMINI_API_KEY:
+        # Mock provider logic defined locally or fallback (keeping it simple)
+        pass # In tests we mock this dependency in conftest.py anyway
+    
     return GeminiProvider(api_key=settings.GEMINI_API_KEY)

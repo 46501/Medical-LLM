@@ -26,3 +26,7 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+def get_llm():
+    from app.llm.provider import get_llm_provider
+    return get_llm_provider()

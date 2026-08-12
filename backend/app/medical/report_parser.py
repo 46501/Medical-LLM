@@ -1,8 +1,7 @@
-from app.llm.provider import get_llm_provider
+from app.llm.provider import LLMProvider
 from app.safety.classifier import MedicalSafetyEngine
 
-async def analyze_medical_report(text: str) -> str:
-    llm = get_llm_provider()
+async def analyze_medical_report(text: str, llm: LLMProvider) -> str:
     engine = MedicalSafetyEngine(llm)
     
     prompt = f"""

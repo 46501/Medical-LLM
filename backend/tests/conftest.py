@@ -46,6 +46,21 @@ app.dependency_overrides[get_db] = override_get_db
 from app.core.rate_limit import limiter
 limiter.enabled = False
 
+from app.llm.provider import LLMProvider
+class MockLLMProvider(LLMProvider):
+    async def generate_response(self, system_prompt: str, user_prompt: str) -> str:
+        return "This is a mock Gemini response."
+    async def generate_stream(self, system_prompt: str, user_prompt: str):
+        yield "This "
+        yield "is a "
+        yield "mock Gemini stream."
+
+def override_get_llm():
+    return MockLLMProvider()
+
+from app.api.deps import get_llm
+app.dependency_overrides[get_llm] = override_get_llm
+
 @pytest.fixture(scope="session")
 def setup_db():
     Base.metadata.create_all(bind=engine)

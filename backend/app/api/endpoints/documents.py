@@ -46,13 +46,14 @@ async def upload_document(
 async def analyze_document(
     doc_id: int,
     db: Session = Depends(deps.get_db),
-    current_user = Depends(deps.get_current_user)
+    current_user = Depends(deps.get_current_user),
+    llm = Depends(deps.get_llm)
 ):
     doc = db.query(Document).filter(Document.id == doc_id, Document.user_id == current_user.id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
         
-    explanation = await analyze_medical_report(doc.content_text)
+    explanation = await analyze_medical_report(doc.content_text, llm)
     
     return ReportAnalysisResponse(
         document_id=doc.id,

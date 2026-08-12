@@ -11,8 +11,8 @@ router = APIRouter()
 async def chat_endpoint(
     request: ChatRequest,
     current_user = Depends(deps.get_current_user),
+    llm: LLMProvider = Depends(deps.get_llm),
 ):
-    llm = get_llm_provider()
     safety_engine = MedicalSafetyEngine(llm)
     
     # 1. Safety Check
