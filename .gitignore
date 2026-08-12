@@ -86,4 +86,5 @@ Thumbs.db
 
 # Misc logs and data
 *.log
+*.db
 runs.json

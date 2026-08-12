@@ -45,6 +45,7 @@ jobs:
       env:
         DATABASE_URL: postgresql+psycopg://medimind:password123@localhost:5432/medimind_test_db
         JWT_SECRET: supersecretkey
+        GEMINI_API_KEY: mock_ci_key
       run: |
         pytest -v
 
