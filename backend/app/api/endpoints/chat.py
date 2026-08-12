@@ -32,3 +32,32 @@ async def chat_endpoint(
     safe_response = await safety_engine.validate_response(raw_response)
     
     return ChatResponse(response=safe_response, is_safe=True)
+
+from fastapi.responses import StreamingResponse
+
+@router.post("/stream")
+async def chat_stream_endpoint(
+    request: ChatRequest,
+    current_user = Depends(deps.get_current_user),
+    llm: LLMProvider = Depends(deps.get_llm),
+):
+    safety_engine = MedicalSafetyEngine(llm)
+    
+    # 1. Safety Check (Input only)
+    is_safe, fallback_msg = await safety_engine.is_safe(request.message)
+    if not is_safe:
+        async def fallback_generator():
+            yield fallback_msg
+        return StreamingResponse(fallback_generator(), media_type="text/event-stream")
+        
+    system_prompt = (
+        "You are MediMind AI, a helpful medical assistant. "
+        "You must NEVER claim to be a doctor or give a definitive diagnosis. "
+        "Provide educational information, highlight warning signs, and encourage professional consultation."
+    )
+    
+    # 2. LLM Streaming
+    return StreamingResponse(
+        llm.generate_stream(system_prompt, request.message),
+        media_type="text/event-stream"
+    )

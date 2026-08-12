@@ -11,6 +11,10 @@ class LLMProvider(ABC):
     async def generate_stream(self, system_prompt: str, user_prompt: str) -> AsyncGenerator[str, None]:
         pass
 
+    @abstractmethod
+    async def extract_text_from_file(self, file_bytes: bytes, mime_type: str) -> str:
+        pass
+
 class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -32,6 +36,19 @@ class GeminiProvider(LLMProvider):
         async for chunk in response:
             if chunk.text:
                 yield chunk.text
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    async def extract_text_from_file(self, file_bytes: bytes, mime_type: str) -> str:
+        prompt = "Extract all text from this document accurately. Do not summarize or add any commentary. Just return the raw text."
+        contents = [
+            prompt,
+            {
+                "mime_type": mime_type,
+                "data": file_bytes
+            }
+        ]
+        response = await self.model.generate_content_async(contents)
+        return response.text
 
 def get_llm_provider() -> LLMProvider:
     from app.core.config import settings

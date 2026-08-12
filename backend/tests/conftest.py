@@ -54,6 +54,8 @@ class MockLLMProvider(LLMProvider):
         yield "This "
         yield "is a "
         yield "mock Gemini stream."
+    async def extract_text_from_file(self, file_bytes: bytes, mime_type: str) -> str:
+        return "Mock extracted text from file."
 
 def override_get_llm():
     return MockLLMProvider()

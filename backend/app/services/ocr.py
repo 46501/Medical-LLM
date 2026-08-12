@@ -1,11 +1,8 @@
-import pytesseract
-from PIL import Image
-import io
+from app.llm.provider import LLMProvider
 
-def extract_text_from_image(image_bytes: bytes) -> str:
+async def extract_text_from_image(image_bytes: bytes, mime_type: str, llm: LLMProvider) -> str:
     try:
-        image = Image.open(io.BytesIO(image_bytes))
-        text = pytesseract.image_to_string(image)
+        text = await llm.extract_text_from_file(image_bytes, mime_type)
         return text.strip()
     except Exception as e:
-        return ""
+        return f"Error extracting text: {str(e)}"

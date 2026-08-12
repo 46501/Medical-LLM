@@ -12,11 +12,12 @@ router = APIRouter()
 async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(deps.get_db),
-    current_user = Depends(deps.get_current_user)
+    current_user = Depends(deps.get_current_user),
+    llm = Depends(deps.get_llm)
 ):
-    ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf"]
+    ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"]
     if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and PDF are allowed.")
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, WEBP, and PDF are allowed.")
         
     # Read file and enforce size limit (5MB)
     MAX_SIZE = 5 * 1024 * 1024
@@ -29,7 +30,7 @@ async def upload_document(
     safe_filename = os.path.basename(file.filename)
     secure_filename = f"{uuid.uuid4().hex}_{safe_filename}"
     
-    extracted_text = extract_text_from_image(contents)
+    extracted_text = await extract_text_from_image(contents, file.content_type, llm)
     
     doc = Document(
         user_id=current_user.id,
