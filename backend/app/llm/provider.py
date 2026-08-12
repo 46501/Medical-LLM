@@ -20,8 +20,7 @@ class GeminiProvider(LLMProvider):
         self.api_key = api_key
         import google.generativeai as genai
         genai.configure(api_key=api_key)
-        # Use gemini-1.5-flash as the standard model instead of legacy gemini-pro
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(self, system_prompt: str, user_prompt: str) -> str:
@@ -34,8 +33,11 @@ class GeminiProvider(LLMProvider):
         prompt = f"System Instruction: {system_prompt}\n\nUser: {user_prompt}"
         response = await self.model.generate_content_async(prompt, stream=True)
         async for chunk in response:
-            if chunk.text:
-                yield chunk.text
+            try:
+                if chunk.text:
+                    yield chunk.text
+            except ValueError:
+                pass
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def extract_text_from_file(self, file_bytes: bytes, mime_type: str) -> str:

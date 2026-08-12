@@ -44,7 +44,7 @@ def register(
     return user
 
 @router.post("/login", response_model=Token)
-@limiter.limit("5/minute")
+@limiter.limit("100/minute")
 def login_access_token(
     request: Request,
     db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()
