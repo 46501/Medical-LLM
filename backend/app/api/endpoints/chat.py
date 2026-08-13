@@ -56,8 +56,15 @@ async def chat_stream_endpoint(
         "Provide educational information, highlight warning signs, and encourage professional consultation."
     )
     
-    # 2. LLM Streaming
+    # 2. LLM Streaming with error handling
+    async def safe_stream():
+        try:
+            async for chunk in llm.generate_stream(system_prompt, request.message):
+                yield chunk
+        except Exception as e:
+            yield "\n\nService temporarily unavailable. Please try again later."
+    
     return StreamingResponse(
-        llm.generate_stream(system_prompt, request.message),
+        safe_stream(),
         media_type="text/event-stream"
     )

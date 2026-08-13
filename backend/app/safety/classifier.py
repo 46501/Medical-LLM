@@ -16,7 +16,12 @@ class MedicalSafetyEngine:
             if word in lower_input:
                 return False, "If you're in immediate danger or experiencing a medical emergency, please call your local emergency services (like 911) or go to the nearest emergency room immediately."
                 
-        emergency_keywords = ["heart attack", "stroke", "severe bleeding", "can't breathe"]
+        emergency_keywords = [
+            "heart attack", "stroke", "severe bleeding", "can't breathe",
+            "chest pain", "arm numbness", "arm pain", "jaw pain",
+            "difficulty breathing", "shortness of breath", "loss of consciousness",
+            "passed out", "fainting", "seizure", "severe chest"
+        ]
         for word in emergency_keywords:
             if word in lower_input:
                 return False, "It sounds like you may be experiencing a medical emergency. Please seek immediate professional medical attention or call emergency services."
