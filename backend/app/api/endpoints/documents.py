@@ -30,7 +30,10 @@ async def upload_document(
     safe_filename = os.path.basename(file.filename)
     secure_filename = f"{uuid.uuid4().hex}_{safe_filename}"
     
-    extracted_text = await extract_text_from_image(contents, file.content_type, llm)
+    try:
+        extracted_text = await extract_text_from_image(contents, file.content_type, llm)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="OCR Service temporarily unavailable. Please try again later.")
     
     doc = Document(
         user_id=current_user.id,
@@ -54,7 +57,10 @@ async def analyze_document(
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
         
-    explanation = await analyze_medical_report(doc.content_text, llm)
+    try:
+        explanation = await analyze_medical_report(doc.content_text, llm)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="Analysis Service temporarily unavailable. Please try again later.")
     
     return ReportAnalysisResponse(
         document_id=doc.id,

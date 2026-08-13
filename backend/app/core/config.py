@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     
+    # Environment
+    ENVIRONMENT: str = "production"
+    FRONTEND_URL: str = "http://localhost:3000"
+    
     # Database
     DATABASE_URL: str
     

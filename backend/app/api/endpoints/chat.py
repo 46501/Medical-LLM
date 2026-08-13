@@ -24,14 +24,16 @@ async def chat_endpoint(
     system_prompt = (
         "You are MediMind AI, a helpful medical assistant. "
         "You must NEVER claim to be a doctor or give a definitive diagnosis. "
+        "You must NEVER recommend, prescribe, or endorse dangerous medications. "
         "Provide educational information, highlight warning signs, and encourage professional consultation."
     )
-    raw_response = await llm.generate_response(system_prompt, request.message)
-    
-    # 3. Response Validation
-    safe_response = await safety_engine.validate_response(raw_response)
-    
-    return ChatResponse(response=safe_response, is_safe=True)
+    try:
+        raw_response = await llm.generate_response(system_prompt, request.message)
+        # 3. Response Validation
+        safe_response = await safety_engine.validate_response(raw_response)
+        return ChatResponse(response=safe_response, is_safe=True)
+    except Exception as e:
+        return ChatResponse(response="Service temporarily unavailable. Please try again later.", is_safe=False)
 
 from fastapi.responses import StreamingResponse
 
@@ -53,6 +55,7 @@ async def chat_stream_endpoint(
     system_prompt = (
         "You are MediMind AI, a helpful medical assistant. "
         "You must NEVER claim to be a doctor or give a definitive diagnosis. "
+        "You must NEVER recommend, prescribe, or endorse dangerous medications. "
         "Provide educational information, highlight warning signs, and encourage professional consultation."
     )
     
